@@ -1,29 +1,32 @@
 #!/usr/bin/env python
-# title             : now_playing.py
-# description       : Now Playing is an OBS script that will update a Text Source
-#                   : with the current song that Media Player are playing. Only for Windows OS
-# author            : Etuldan(Orgin)
-#                   : Creepercdn(Fork)
-# date              : 2020 12 12
-# version           : 0.2
-# usage             : python now_playing.py
-# dependencies      : - Python 3.6 (https://www.python.org/)
-#                   :   - pywin32 (https://github.com/mhammond/pywin32/releases)
-#                   : - Windows Vista+
-# notes             : Follow this step for this script to work:
-#                   : Python:
-#                   :   1. Install python (v3.6 and 64 bits, this is important)
-#                   :   2. Install pywin32 (not with pip, but with installer)
-#                   : OBS:
-#                   :   1. Create a GDI+ Text Source with the name of your choice
-#                   :   2. Go to Tools › Scripts
-#                   :   3. Click the "+" button and add this script
-#                   :   5. Set the same source name as the one you just created
-#                   :   6. Check "Enable"
-#                   :   7. Click the "Python Settings" rab
-#                   :   8. Select your python install path
-#                   :
-# python_version    : 3.6+
+# 标题        : now_playing.py
+# 说明        : Now Playing是一个OBS实用性脚本，当您使用指定的播放器播放音乐时，
+#             : 这个脚本会自动为您更新您选择的“文本来源”。仅支持Windows。
+# 作者        : Etuldan(原作者)
+#             : Creepercdn(Fork)
+#             : MegaRange(Fork of fork)
+# 更新日期    : 2021 02 05
+# 版本        : 0.2a
+# 前置需求    : - Python 3.6 (https://www.python.org/)
+#             :   - pywin32 (https://github.com/mhammond/pywin32/releases)
+#             : - Windows Vista或更高版本
+# 使用方法    : 请按照以下方法安装和设置Now Playing：
+#             : Python:
+#             :   1. 安装Python（目前版本的OBS必须使用Python 3.6，请确认您的版本。
+#             :      实际上，您可以同时安装多个版本的Python，便于使用一些指定版本的脚本。）
+#             :   2. 安装pywin32：在命令提示符或PowerShell中，输入以下命令：
+#             ：     python -m pip install pywin32 -U
+#             : OBS:
+#             :   1. 创建一个“GDI+文本”来源，并取一个名字；
+#             :   2. 点击“工具”菜单，再点击“脚本”；
+#             :   2.5. （重要）如果您之前没用过Python脚本，您需要在“Python设置”选项卡
+#             :        检查OBS是不是正确配置了Python 3.6的安装路径，安装位置一般在这里：
+#             :        C:\Users\<您的用户名>\AppData\Local\Programs\Python\Python36
+#             :   3. 点击下面的加号“+”按钮，然后添加这个脚本；
+#             :   4. 勾选您想要使用的播放器；
+#             :   6. 在“使用的文本来源”处，选择您刚创建的“GDI+文本”来源的名字；
+#             :   7. 点击“启用该脚本”。
+#  
 # ==============================================================================
 
 import ctypes
@@ -84,11 +87,11 @@ def script_description():
     if debug_mode:
         print("Calling description")
 
-    return "<b>Music Now Playing</b>" + \
+    return "<b>正在播放</b>" + \
         "<hr>" + \
-        "Display current song as a text on your screen." + \
+        "本脚本将自动显示您正在播放的音乐。" + \
         "<br/>" + \
-        "Available placeholders: " + \
+        "可以使用的通配字符串：" + \
         "<br/>" + \
         "<code>%artist</code>, <code>%title</code>" + \
         "<hr>"
@@ -96,30 +99,30 @@ def script_description():
 
 def script_load(_):
     if debug_mode:
-        print("[CS] Loaded script.")
+        print("[CS] 脚本已加载。")
 
 
 def script_properties():
     if debug_mode:
-        print("[CS] Loaded properties.")
+        print("[CS] 配置已加载。")
 
     props = obs.obs_properties_create()
-    obs.obs_properties_add_bool(props, "enabled", "Enabled")
-    obs.obs_properties_add_bool(props, "debug_mode", "Debug Mode")
+    obs.obs_properties_add_bool(props, "enabled", "启用该脚本")
+    obs.obs_properties_add_bool(props, "debug_mode", "调试模式")
     obs.obs_properties_add_int(
-        props, "check_frequency", "Check frequency", 150, 10000, 100)
+        props, "check_frequency", "检查频率（毫秒）", 150, 10000, 100)
     obs.obs_properties_add_text(
-        props, "display_text", "Display text", obs.OBS_TEXT_DEFAULT)
+        props, "display_text", "显示文本", obs.OBS_TEXT_DEFAULT)
     obs.obs_properties_add_bool(props, "spotify", "Spotify")
     obs.obs_properties_add_bool(props, "vlc", "VLC")
     obs.obs_properties_add_bool(props, "yt_firefox", "Youtube for Firefox")
     obs.obs_properties_add_bool(props, "yt_chrome", "Youtube for Chrome")
     obs.obs_properties_add_bool(props, "foobar2000", "Foobar2000")
-    obs.obs_properties_add_bool(props, "necloud", "Netease Cloud Music")
+    obs.obs_properties_add_bool(props, "necloud", "网易云音乐")
     obs.obs_properties_add_bool(props, 'aimp', 'AIMP')
 
     p = obs.obs_properties_add_list(
-        props, "source_name", "Text source",
+        props, "source_name", "使用文本框",
         obs.OBS_COMBO_TYPE_EDITABLE, obs.OBS_COMBO_FORMAT_STRING)
 
     sources = obs.obs_enum_sources()
@@ -136,14 +139,14 @@ def script_properties():
 
 def script_save(settings):
     if debug_mode:
-        print("[CS] Saved properties.")
+        print("[CS] 已保存配置。")
 
     script_update(settings)
 
 
 def script_unload():
     if debug_mode:
-        print("[CS] Unloaded script.")
+        print("[CS] 已停用脚本")
 
     obs.timer_remove(get_song_info)
 
@@ -155,7 +158,7 @@ def script_update(settings):
     global source_name
     global debug_mode
     if debug_mode:
-        print("[CS] Updated properties.")
+        print("[CS] 设置已更新。")
 
     if obs.obs_data_get_bool(settings, "enabled") is True:
         if not enabled:
@@ -187,6 +190,7 @@ def script_update(settings):
 
 def update_song(artist="", song=""):
 
+#    now_playing = "无音乐"
     now_playing = ""
     if(artist != "" or song != ""):
         now_playing = display_text.replace(
@@ -199,7 +203,7 @@ def update_song(artist="", song=""):
     obs.obs_data_release(settings)
     obs.obs_source_release(source)
     if debug_mode:
-        print("[CS] Now Playing : " + artist + " / " + song)
+        print("[CS] 正在播放： " + artist + " / " + song)
 
 
 def get_song_info():
